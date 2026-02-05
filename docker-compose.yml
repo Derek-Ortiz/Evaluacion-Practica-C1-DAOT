@@ -9,14 +9,14 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
-      POSTGRES_DB: actividad_db
+      POSTGRES_DB: evac1_db
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db:/docker-entrypoint-initdb.d:ro 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d actividad_db"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d evac1_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,14 +27,14 @@ services:
   
   app:
     build:
-      context: ./tarea6-dba
+      context: ./Eva_practica_C1
       dockerfile: Dockerfile
-    container_name: tarea6_app
+    container_name: Eva_practica
     restart: unless-stopped
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: actividad_db
+      DB_NAME: evac1_db
       DB_USER: postgres
       DB_PASSWORD: postgres123
       NODE_ENV: development
