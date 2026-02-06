@@ -22,8 +22,8 @@ GRANT CONNECT ON DATABASE ${POSTGRES_DB} TO ${APP_DB_USER};
 GRANT USAGE ON SCHEMA public TO ${APP_DB_USER};
 
 
-GRANT SELECT ON vista_cat_promedio TO ${APP_DB_USER};
-GRANT SELECT ON vista_ranking_usuarios_gastos TO ${APP_DB_USER};
-GRANT SELECT ON vista_ordenes_por_status TO ${APP_DB_USER};
-GRANT SELECT ON vista_productos_mas_vendidos TO ${APP_DB_USER};
-GRANT SELECT ON vista_analisis_desempeño_usuarios TO ${APP_DB_USER};
+GRANT SELECT ON vw_course_performance TO ${APP_DB_USER};
+GRANT SELECT ON vw_teacher_load TO ${APP_DB_USER};
+GRANT SELECT ON vw_students_at_risk TO ${APP_DB_USER};
+GRANT SELECT ON vw_attendance_by_group TO ${APP_DB_USER};
+GRANT SELECT ON vw_rank_students TO ${APP_DB_USER};
