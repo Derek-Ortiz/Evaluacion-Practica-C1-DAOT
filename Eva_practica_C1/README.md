@@ -12,6 +12,28 @@
 | `migrate.sql` | Script de migración |
 | `verify.sql` | Scripts de verificación |
 
+## Seguridad y roles
+
+La app no se conecta como `postgres`. Se crea un usuario de aplicacion con acceso **solo de lectura** a las VIEWS.
+El rol se define en `db/roles.sql` y se aplica al levantar el contenedor.
+
+### Como verificar permisos
+
+Conectate con el usuario de aplicacion y valida que:
+
+1. **Puede leer VIEWS**
+```sql
+SELECT * FROM vw_course_performance LIMIT 1;
+```
+
+2. **No puede leer tablas base**
+```sql
+SELECT * FROM students LIMIT 1;
+```
+
+Si la segunda consulta falla por permisos, la configuracion es correcta.
+
+
 ## Índices de Optimización
 
 ### Justificación de Índices
