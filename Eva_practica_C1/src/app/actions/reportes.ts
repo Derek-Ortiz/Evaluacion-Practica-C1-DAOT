@@ -67,7 +67,7 @@ export async function getVwCoursePerformance(rawFilters?: Partial<CoursePerforma
             params
         );
         
-        // Cálculo de KPIs destacados
+        
         const totalEstudiantes = result.rows.reduce((sum, row) => sum + parseInt(row.total_estudiantes || 0), 0);
         const promedioGeneral = result.rows.length > 0
             ? (result.rows.reduce((sum, row) => sum + parseFloat(row.promedio_final || 0), 0) / result.rows.length).toFixed(2)

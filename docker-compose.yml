@@ -15,7 +15,7 @@ services:
       APP_DB_USER: ${APP_DB_USER}
       APP_DB_PASSWORD: ${APP_DB_PASSWORD}
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
@@ -29,32 +29,33 @@ services:
     networks:
       - tarea6-network
 
-  
-  # app:
-  #   build:
-  #     context: ./Eva_practica_C1
-  #     dockerfile: Dockerfile
-  #   container_name: Eva_practica
-  #   restart: unless-stopped
-  #   environment:
-  #     DB_HOST: postgres
-  #     DB_PORT: 5432
-  #     DB_NAME: evac1_db
-  #     DB_USER: postgres
-  #     DB_PASSWORD: postgres123
-  #     NODE_ENV: development
-  #   ports:
-  #     - "3000:3000"
-  #   volumes:
-  #     - ./tarea6-dba:/app
-  #     - /app/node_modules
-  #     - /app/.next
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   command: npm run dev
-  #   networks:
-  #     - tarea6-network
+  app:
+    build:
+      context: ./Eva_practica_C1
+      dockerfile: Dockerfile
+    container_name: evac1_app
+    restart: unless-stopped
+    env_file:
+      - ./Eva_practica_C1/.env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      NODE_ENV: development
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    volumes:
+      - ./Eva_practica_C1:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: npm run dev
+    networks:
+      - tarea6-network
 
   # pgadmin:
   #   image: dpage/pgadmin4:latest
@@ -64,7 +65,7 @@ services:
   #     PGADMIN_DEFAULT_EMAIL: admin@admin.com
   #     PGADMIN_DEFAULT_PASSWORD: admin
   #   ports:
-  #     - "5050:80"
+  #     - "${PGADMIN_PORT:-5050}:80"
   #   depends_on:
   #     - postgres
   #   networks:
