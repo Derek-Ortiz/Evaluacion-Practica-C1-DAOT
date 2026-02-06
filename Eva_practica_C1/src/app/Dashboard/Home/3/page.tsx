@@ -93,9 +93,9 @@ export default async function Report3Page({
                         {datos.map((row, index) => (
                             <tr key={index} className="hover:bg-gray-50">
                                 <td className="px-4 py-2 border text-center">{row.id_student}</td>
-                                <td className="px-4 py-2 border">{row.nombre_estudiante}</td>
+                                <td className="px-4 py-2 border">{row.student_name}</td>
                                 <td className="px-4 py-2 border">{row.email}</td>
-                                <td className="px-4 py-2 border">{row.periodo}</td>
+                                <td className="px-4 py-2 border">{row.term}</td>
                                 <td className="px-4 py-2 border text-right">{Number(row.promedio_calificaciones).toFixed(2)}</td>
                                 <td className="px-4 py-2 border text-right">{Number(row.porcentaje_asistencia).toFixed(1)}%</td>
                                 <td className="px-4 py-2 border text-center">

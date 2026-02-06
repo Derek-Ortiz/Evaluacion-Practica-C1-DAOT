@@ -55,12 +55,7 @@ export async function getVwCoursePerformance(rawFilters?: Partial<CoursePerforma
         
         const result = await pool.query(
             `SELECT 
-                course_id,
-                term AS periodo,
-                program AS programa,
-                total_estudiantes,
-                promedio_final,
-                porcentaje_reprobados
+                *
              FROM vw_course_performance 
              ${whereClause}
              ORDER BY ${orderColumn} ${orderDirection}`,
@@ -81,7 +76,7 @@ export async function getVwCoursePerformance(rawFilters?: Partial<CoursePerforma
         const destacado = {
             totalEstudiantes,
             promedioGeneral,
-            cursoDestacado: cursoMejorPromedio?.course_id,
+            cursoDestacado: cursoMejorPromedio?.course_code,
             mejorPromedio: cursoMejorPromedio?.promedio_final,
             tasaReprobacionPromedio: `${tasaReprobacionPromedio}%`,
             totalCursos: result.rows.length
@@ -132,13 +127,7 @@ export async function getVwTeacherLoad(rawFilters?: Partial<TeacherLoadFilter>) 
 
         const dataQuery = `
             SELECT 
-                id_teacher,
-                teacher_name AS nombre_profesor,
-                term AS periodo,
-                total_grupos,
-                total_alumnos,
-                promedio_general,
-                ratio_alumnos_por_grupo
+                *
             FROM vw_teacher_load 
             ${whereClause}
             ORDER BY ${orderColumn} ${orderDirection}
@@ -238,13 +227,7 @@ export async function getVwStudentsAtRisk(rawFilters?: Partial<StudentsAtRiskFil
 
         const dataQuery = `
             SELECT 
-                id_student,
-                student_name AS nombre_estudiante,
-                email,
-                term AS periodo,
-                promedio_calificaciones,
-                porcentaje_asistencia,
-                nivel_riesgo
+                *
             FROM vw_students_at_risk 
             ${whereClause}
             ORDER BY ${orderColumn} ${orderDirection}
@@ -346,14 +329,7 @@ export async function getVwAttendanceByGroup(rawFilters?: Partial<AttendanceByGr
         
         const result = await pool.query(
             `SELECT 
-                id_group,
-                course_id,
-                term AS periodo,
-                total_sesiones,
-                asistencias,
-                ausencias,
-                porcentaje_asistencia,
-                estado_asistencia
+                *
              FROM vw_attendance_by_group 
              ${whereClause}
              ORDER BY ${orderColumn} ${orderDirection}`,
@@ -436,14 +412,7 @@ export async function getVwRankStudents(rawFilters?: Partial<RankStudentsFilter>
 
         const dataQuery = `
             SELECT 
-                id_student,
-                student_name AS nombre_estudiante,
-                program AS programa,
-                term AS periodo,
-                calificacion_final,
-                ranking_programa,
-                ranking_global,
-                percentil
+                *
             FROM vw_rank_students 
             ${whereClause}
             ORDER BY ${orderColumn} ${orderDirection}
@@ -464,13 +433,18 @@ export async function getVwRankStudents(rawFilters?: Partial<RankStudentsFilter>
         const totalPages = Math.ceil(total / filters.limit);
         
 
+        // Construir whereClause sin el filtro de ranking para obtener el mejor estudiante global
+        const topConditions = whereConditions.filter(c => !c.includes('ranking_programa'));
+        const topWhereClause = topConditions.length > 0 ? `WHERE ${topConditions.join(' AND ')}` : '';
+        const topParams = countParams.slice(0, topConditions.length);
+        
         const topStudentQuery = await pool.query(
             `SELECT student_name, program, calificacion_final, percentil 
              FROM vw_rank_students 
-             ${whereClause.replace(/ranking_programa <= \$\d+( AND)?/g, '')}
+             ${topWhereClause}
              ORDER BY calificacion_final DESC 
              LIMIT 1`,
-            countParams.filter((_, i) => i < countParams.length - (filters.topN < 100 ? 1 : 0))
+            topParams
         );
         
         const topStudent = topStudentQuery.rows[0];

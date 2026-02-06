@@ -86,7 +86,7 @@ export default async function Report4Page({
                             <tr key={index} className="hover:bg-gray-50">
                                 <td className="px-4 py-2 border text-center">{row.id_group}</td>
                                 <td className="px-4 py-2 border text-center">{row.course_id}</td>
-                                <td className="px-4 py-2 border">{row.periodo}</td>
+                                <td className="px-4 py-2 border">{row.term}</td>
                                 <td className="px-4 py-2 border text-center">{row.total_sesiones}</td>
                                 <td className="px-4 py-2 border text-center">{row.asistencias}</td>
                                 <td className="px-4 py-2 border text-center">{row.ausencias}</td>

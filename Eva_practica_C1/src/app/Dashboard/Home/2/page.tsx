@@ -71,8 +71,8 @@ export default async function Report2Page({
                         {datos.map((row, index) => (
                             <tr key={index} className="hover:bg-gray-50">
                                 <td className="px-4 py-2 border text-center">{row.id_teacher}</td>
-                                <td className="px-4 py-2 border">{row.nombre_profesor}</td>
-                                <td className="px-4 py-2 border">{row.periodo}</td>
+                                <td className="px-4 py-2 border">{row.teacher_name}</td>
+                                <td className="px-4 py-2 border">{row.term}</td>
                                 <td className="px-4 py-2 border text-center">{row.total_grupos}</td>
                                 <td className="px-4 py-2 border text-center">{row.total_alumnos}</td>
                                 <td className="px-4 py-2 border text-right">{Number(row.promedio_general).toFixed(2)}</td>
