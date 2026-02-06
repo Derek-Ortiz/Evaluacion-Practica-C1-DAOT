@@ -98,9 +98,9 @@ export default async function Report5Page({
                                     </span>
                                 </td>
                                 <td className="px-4 py-2 border text-center">#{row.ranking_global}</td>
-                                <td className="px-4 py-2 border">{row.student_name}</td>
-                                <td className="px-4 py-2 border">{row.program}</td>
-                                <td className="px-4 py-2 border">{row.term}</td>
+                                <td className="px-4 py-2 border">{row.nombre_estudiante}</td>
+                                <td className="px-4 py-2 border">{row.programa}</td>
+                                <td className="px-4 py-2 border">{row.periodo}</td>
                                 <td className="px-4 py-2 border text-right font-semibold">{Number(row.calificacion_final).toFixed(2)}</td>
                                 <td className="px-4 py-2 border text-center">
                                     <span className={`px-2 py-1 rounded ${

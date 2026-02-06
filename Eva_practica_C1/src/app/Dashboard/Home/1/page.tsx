@@ -66,7 +66,7 @@ export default async function Report1Page({
                     <tbody>
                         {datos.map((row, index) => (
                             <tr key={index} className="hover:bg-gray-50">
-                                <td className="px-4 py-2 border text-center">{row.course_code}</td>
+                                <td className="px-4 py-2 border text-center">{row.course_id}</td>
                                 <td className="px-4 py-2 border">{row.term}</td>
                                 <td className="px-4 py-2 border">{row.program}</td>
                                 <td className="px-4 py-2 border text-center">{row.total_estudiantes}</td>

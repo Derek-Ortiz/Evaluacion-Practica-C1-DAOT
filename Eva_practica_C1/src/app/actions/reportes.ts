@@ -412,7 +412,14 @@ export async function getVwRankStudents(rawFilters?: Partial<RankStudentsFilter>
 
         const dataQuery = `
             SELECT 
-                *
+                id_student,
+                student_name AS nombre_estudiante,
+                program AS programa,
+                term AS periodo,
+                calificacion_final,
+                ranking_programa,
+                ranking_global,
+                percentil
             FROM vw_rank_students 
             ${whereClause}
             ORDER BY ${orderColumn} ${orderDirection}
@@ -433,7 +440,7 @@ export async function getVwRankStudents(rawFilters?: Partial<RankStudentsFilter>
         const totalPages = Math.ceil(total / filters.limit);
         
 
-        // Construir whereClause sin el filtro de ranking para obtener el mejor estudiante global
+        
         const topConditions = whereConditions.filter(c => !c.includes('ranking_programa'));
         const topWhereClause = topConditions.length > 0 ? `WHERE ${topConditions.join(' AND ')}` : '';
         const topParams = countParams.slice(0, topConditions.length);
