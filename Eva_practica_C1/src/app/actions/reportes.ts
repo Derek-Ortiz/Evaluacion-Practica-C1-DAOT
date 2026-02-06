@@ -14,14 +14,6 @@ import {
     type RankStudentsFilter
 } from '@/lib/validations'
 
-// ============================================================================
-// REPORTE 1: Rendimiento Académico por Curso (vw_course_performance)
-// ============================================================================
-// Título: Rendimiento Académico por Curso
-// Descripción: Análisis del desempeño estudiantil por curso y período académico
-// KPI Destacado: Promedio general y tasa de reprobación
-// ============================================================================
-
 export async function getVwCoursePerformance(rawFilters?: Partial<CoursePerformanceFilter>) {
     try {
         const filters = coursePerformanceFilterSchema.parse(rawFilters || {});
@@ -101,15 +93,6 @@ export async function getVwCoursePerformance(rawFilters?: Partial<CoursePerforma
         throw new Error('Error al obtener rendimiento de cursos');
     }
 }
-
-// ============================================================================
-// REPORTE 2: Carga Docente (vw_teacher_load)
-// ============================================================================
-// Título: Carga Docente por Período
-// Descripción: Análisis de la distribución de trabajo entre profesores
-// KPI Destacado: Ratio alumnos/grupo y promedio general de calificaciones
-// ============================================================================
-
 export async function getVwTeacherLoad(rawFilters?: Partial<TeacherLoadFilter>) {
     try {
         const filters = teacherLoadFilterSchema.parse(rawFilters || {});
@@ -146,7 +129,7 @@ export async function getVwTeacherLoad(rawFilters?: Partial<TeacherLoadFilter>) 
             ? `WHERE ${whereConditions.join(' AND ')}` 
             : '';
         
-        // Query de datos con paginación
+
         const dataQuery = `
             SELECT 
                 id_teacher,
@@ -163,7 +146,7 @@ export async function getVwTeacherLoad(rawFilters?: Partial<TeacherLoadFilter>) 
         `;
         params.push(filters.limit, offset);
         
-        // Query de conteo
+
         const countParams = params.slice(0, -2);
         const countQuery = `SELECT COUNT(*) as total FROM vw_teacher_load ${whereClause}`;
         
@@ -175,7 +158,7 @@ export async function getVwTeacherLoad(rawFilters?: Partial<TeacherLoadFilter>) 
         const total = parseInt(countResult.rows[0]?.total || '0');
         const totalPages = Math.ceil(total / filters.limit);
         
-        // KPIs destacados
+
         const statsQuery = await pool.query(
             `SELECT 
                 MAX(total_alumnos) as max_alumnos,
@@ -211,14 +194,6 @@ export async function getVwTeacherLoad(rawFilters?: Partial<TeacherLoadFilter>) 
     }
 }
 
-// ============================================================================
-// REPORTE 3: Estudiantes en Riesgo (vw_students_at_risk)
-// ============================================================================
-// Título: Estudiantes en Riesgo Académico
-// Descripción: Identificación de alumnos con bajo rendimiento o asistencia
-// KPI Destacado: Distribución por nivel de riesgo
-// ============================================================================
-
 export async function getVwStudentsAtRisk(rawFilters?: Partial<StudentsAtRiskFilter>) {
     try {
         const filters = studentsAtRiskFilterSchema.parse(rawFilters || {});
@@ -238,7 +213,6 @@ export async function getVwStudentsAtRisk(rawFilters?: Partial<StudentsAtRiskFil
         const whereConditions: string[] = [];
         let paramIndex = 1;
         
-        // Búsqueda por nombre o email
         if (filters.search && filters.search !== '') {
             whereConditions.push(`(student_name ILIKE $${paramIndex} OR email ILIKE $${paramIndex})`);
             params.push(`%${filters.search}%`);
@@ -261,7 +235,7 @@ export async function getVwStudentsAtRisk(rawFilters?: Partial<StudentsAtRiskFil
             ? `WHERE ${whereConditions.join(' AND ')}` 
             : '';
         
-        // Query de datos con paginación
+
         const dataQuery = `
             SELECT 
                 id_student,
@@ -278,11 +252,11 @@ export async function getVwStudentsAtRisk(rawFilters?: Partial<StudentsAtRiskFil
         `;
         params.push(filters.limit, offset);
         
-        // Query de conteo
+
         const countParams = params.slice(0, -2);
         const countQuery = `SELECT COUNT(*) as total FROM vw_students_at_risk ${whereClause}`;
         
-        // Query de distribución por riesgo
+
         const riesgoQuery = `
             SELECT nivel_riesgo, COUNT(*) as cantidad 
             FROM vw_students_at_risk ${whereClause}
@@ -298,7 +272,7 @@ export async function getVwStudentsAtRisk(rawFilters?: Partial<StudentsAtRiskFil
         const total = parseInt(countResult.rows[0]?.total || '0');
         const totalPages = Math.ceil(total / filters.limit);
         
-        // Distribución de riesgo
+        
         const distribucionRiesgo: Record<string, number> = {};
         riesgoResult.rows.forEach(row => {
             distribucionRiesgo[row.nivel_riesgo] = parseInt(row.cantidad);
@@ -331,15 +305,6 @@ export async function getVwStudentsAtRisk(rawFilters?: Partial<StudentsAtRiskFil
         throw new Error('Error al obtener estudiantes en riesgo');
     }
 }
-
-// ============================================================================
-// REPORTE 4: Asistencia por Grupo (vw_attendance_by_group)
-// ============================================================================
-// Título: Asistencia por Grupo
-// Descripción: Análisis de asistencia promedio por grupo y período
-// KPI Destacado: Estado de asistencia y grupos críticos
-// ============================================================================
-
 export async function getVwAttendanceByGroup(rawFilters?: Partial<AttendanceByGroupFilter>) {
     try {
         const filters = attendanceByGroupFilterSchema.parse(rawFilters || {});
@@ -395,7 +360,7 @@ export async function getVwAttendanceByGroup(rawFilters?: Partial<AttendanceByGr
             params
         );
         
-        // Calcular distribución por estado
+
         const distribucionEstado: Record<string, number> = {};
         result.rows.forEach(row => {
             distribucionEstado[row.estado_asistencia] = (distribucionEstado[row.estado_asistencia] || 0) + 1;
@@ -424,14 +389,6 @@ export async function getVwAttendanceByGroup(rawFilters?: Partial<AttendanceByGr
         throw new Error('Error al obtener asistencia por grupo');
     }
 }
-
-// ============================================================================
-// REPORTE 5: Ranking de Estudiantes (vw_rank_students)
-// ============================================================================
-// Título: Ranking de Estudiantes
-// Descripción: Clasificación de estudiantes por programa y período académico
-// KPI Destacado: Top estudiantes y distribución de percentiles
-// ============================================================================
 
 export async function getVwRankStudents(rawFilters?: Partial<RankStudentsFilter>) {
     try {
@@ -465,7 +422,7 @@ export async function getVwRankStudents(rawFilters?: Partial<RankStudentsFilter>
             paramIndex++;
         }
         
-        // Filtro para top N por ranking de programa
+
         if (filters.topN < 100) {
             whereConditions.push(`ranking_programa <= $${paramIndex}`);
             params.push(filters.topN);
@@ -476,7 +433,7 @@ export async function getVwRankStudents(rawFilters?: Partial<RankStudentsFilter>
             ? `WHERE ${whereConditions.join(' AND ')}` 
             : '';
         
-        // Query de datos con paginación
+
         const dataQuery = `
             SELECT 
                 id_student,
@@ -494,7 +451,7 @@ export async function getVwRankStudents(rawFilters?: Partial<RankStudentsFilter>
         `;
         params.push(filters.limit, offset);
         
-        // Query de conteo
+
         const countParams = params.slice(0, -2);
         const countQuery = `SELECT COUNT(*) as total FROM vw_rank_students ${whereClause}`;
         
@@ -506,7 +463,7 @@ export async function getVwRankStudents(rawFilters?: Partial<RankStudentsFilter>
         const total = parseInt(countResult.rows[0]?.total || '0');
         const totalPages = Math.ceil(total / filters.limit);
         
-        // KPIs: obtener el top 1 y estadísticas
+
         const topStudentQuery = await pool.query(
             `SELECT student_name, program, calificacion_final, percentil 
              FROM vw_rank_students 
