@@ -69,8 +69,8 @@ WITH student_metrics AS (
         s.student_name,
         s.email,
         g.term,
-        AVG(gr.final) AS promedio_calificaciones,
-        AVG(CASE WHEN a.present THEN 1 ELSE 0 END) * 100 AS porcentaje_asistencia
+        ROUND(AVG(gr.final),2) AS promedio_calificaciones,
+        ROUND(AVG(CASE WHEN a.present THEN 1 ELSE 0 END),2) * 100 AS porcentaje_asistencia
     FROM students s
     JOIN enrollments e ON s.id_student = e.student_id
     JOIN groups g ON e.group_id = g.id_group
@@ -107,19 +107,19 @@ SELECT
     g.course_id,
     g.term,
     COUNT(a.id_attendance) AS total_sesiones,
-    COUNT(CASE WHEN a.present = 1 THEN 1 END) AS asistencias,
-    COUNT(CASE WHEN a.present = 0 THEN 1 END) AS ausencias,
+    COUNT(CASE WHEN a.present = TRUE THEN 1 END) AS asistencias,
+    COUNT(CASE WHEN a.present = FALSE THEN 1 END) AS ausencias,
     ROUND(
         COALESCE(
-            AVG(CASE WHEN a.present = 1 THEN 1.0 ELSE 0.0 END) * 100,
+            AVG(CASE WHEN a.present = TRUE THEN 1.0 ELSE 0.0 END) * 100,
             0
         ),
         2
     ) AS porcentaje_asistencia,
     CASE 
-        WHEN COALESCE(AVG(CASE WHEN a.present = 1 THEN 1.0 ELSE 0.0 END), 0) < 0.7 THEN 'CRÍTICO'
-        WHEN COALESCE(AVG(CASE WHEN a.present = 1 THEN 1.0 ELSE 0.0 END), 0) < 0.8 THEN 'BAJO'
-        WHEN COALESCE(AVG(CASE WHEN a.present = 1 THEN 1.0 ELSE 0.0 END), 0) < 0.9 THEN 'ACEPTABLE'
+        WHEN COALESCE(AVG(CASE WHEN a.present = TRUE THEN 1.0 ELSE 0.0 END), 0) < 0.7 THEN 'CRÍTICO'
+        WHEN COALESCE(AVG(CASE WHEN a.present = TRUE THEN 1.0 ELSE 0.0 END), 0) < 0.8 THEN 'BAJO'
+        WHEN COALESCE(AVG(CASE WHEN a.present = TRUE THEN 1.0 ELSE 0.0 END), 0) < 0.9 THEN 'ACEPTABLE'
         ELSE 'EXCELENTE'
     END AS estado_asistencia
 FROM groups g
@@ -138,20 +138,29 @@ HAVING COUNT(a.id_attendance) > 0;
 --   SELECT student_name, program, ranking_programa FROM vw_rank_students WHERE ranking_programa = 1;
 
 CREATE OR REPLACE VIEW vw_rank_students AS
+WITH ranked_students AS (
+    SELECT 
+        s.id_student,
+        s.student_name,
+        s.program,
+        g.term,
+        gr.final AS calificacion_final,
+        RANK() OVER (PARTITION BY s.program, g.term ORDER BY gr.final DESC) AS ranking_programa,
+        ROW_NUMBER() OVER (ORDER BY gr.final DESC) AS ranking_global,
+        PERCENT_RANK() OVER (PARTITION BY s.program, g.term ORDER BY gr.final DESC) AS percent_rank_raw
+    FROM students s
+    JOIN enrollments e ON s.id_student = e.student_id
+    JOIN groups g ON e.group_id = g.id_group
+    JOIN grades gr ON e.id_enrollment = gr.enrollment_id
+    WHERE gr.final IS NOT NULL
+)
 SELECT 
-    s.id_student,
-    s.student_name,
-    s.program,
-    g.term,
-    gr.final AS calificacion_final,
-    RANK() OVER (PARTITION BY s.program, g.term ORDER BY gr.final DESC) AS ranking_programa,
-    ROW_NUMBER() OVER (ORDER BY gr.final DESC) AS ranking_global,
-    ROUND(
-        PERCENT_RANK() OVER (PARTITION BY s.program, g.term ORDER BY gr.final DESC) * 100,
-        2
-    ) AS percentil
-FROM students s
-JOIN enrollments e ON s.id_student = e.student_id
-JOIN groups g ON e.group_id = g.id_group
-JOIN grades gr ON e.id_enrollment = gr.enrollment_id
-WHERE gr.final IS NOT NULL;
+    id_student,
+    student_name,
+    program,
+    term,
+    calificacion_final,
+    ranking_programa,
+    ranking_global,
+    ROUND(CAST(percent_rank_raw * 100 AS numeric), 2) AS percentil
+FROM ranked_students;
