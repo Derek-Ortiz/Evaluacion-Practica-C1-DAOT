@@ -1,19 +1,18 @@
-import { getVistaProductosMasVendidos } from "@/app/actions/reportes";
+import { getVwAttendanceByGroup } from "@/app/actions/reportes";
 import Link from "next/link";
 
 export default async function Report4Page({
     searchParams
 }: {
-    searchParams: Promise<{ page?: string; popularidad?: string }>
+    searchParams: Promise<{ term?: string; estado?: string }>
 }) {
     const params = await searchParams;
-    const page = parseInt(params.page || '1');
-    const popularidad = params.popularidad || 'todos';
+    const term = params.term || 'todos';
+    const estado = params.estado || 'todos';
     
-    const { data: datos, destacado, pagination } = await getVistaProductosMasVendidos({
-        page,
-        limit: 5,
-        popularidad: popularidad as 'Muy Popular' | 'Popular' | 'todos'
+    const { data: datos, destacado } = await getVwAttendanceByGroup({
+        term: term as 'enero-abril' | 'mayo-agosto' | 'septiembre-diciembre' | 'todos',
+        estadoAsistencia: estado as 'CRÍTICO' | 'BAJO' | 'ACEPTABLE' | 'EXCELENTE' | 'todos'
     });
     
     return (
@@ -23,31 +22,47 @@ export default async function Report4Page({
                     ← Volver a reportes
                 </Link>
             </div>
-            <h1 className="text-2xl font-bold mb-4">Productos Más Vendidos</h1>
+            <h1 className="text-2xl font-bold mb-4">Asistencia por Grupo</h1>
             <p className="text-gray-600 mb-4">
-                Ranking de productos ordenados por cantidad vendida con clasificación de popularidad.
+                Análisis de asistencia promedio por grupo y período. Usa CASE y COALESCE para clasificar estados.
             </p>
-            
             
             {destacado && (
                 <div className="bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-lg p-6 mb-6 shadow-lg">
-                    <p className="text-sm uppercase tracking-wide opacity-80">Unidades vendidas (Top 1)</p>
-                    <p className="text-4xl font-bold">{destacado.cantidadVendida} uds</p>
-                    <p className="text-lg mt-1">🛒 {destacado.productoMasVendido}</p>
-                    <p className="text-sm opacity-70 mt-2">Ingresos totales: ${destacado.ingresosTotales}</p>
+                    <p className="text-sm uppercase tracking-wide opacity-80">Asistencia Global Promedio</p>
+                    <p className="text-4xl font-bold">{destacado.promedioAsistenciaGlobal}</p>
+                    <p className="text-lg mt-1">{destacado.alerta}</p>
+                    <p className="text-sm opacity-70 mt-2">
+                        Excelentes: {destacado.gruposExcelentes} | 
+                        Aceptables: {destacado.gruposAceptables} | 
+                        Bajos: {destacado.gruposBajos} | 
+                        Críticos: {destacado.gruposCriticos}
+                    </p>
                 </div>
             )}
             
+            <div className="mb-4 flex gap-2 flex-wrap">
+                <span className="font-medium">Filtrar por período:</span>
+                {['todos', 'enero-abril', 'mayo-agosto', 'septiembre-diciembre'].map((t) => (
+                    <Link 
+                        key={t}
+                        href={`/Dashboard/Home/4?term=${t}&estado=${estado}`}
+                        className={`px-3 py-1 rounded ${term === t ? 'bg-purple-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                    >
+                        {t}
+                    </Link>
+                ))}
+            </div>
             
             <div className="mb-4 flex gap-2 flex-wrap">
-                <span className="font-medium">Filtrar por popularidad:</span>
-                {['todos', 'Muy Popular', 'Popular'].map((p) => (
+                <span className="font-medium">Filtrar por estado:</span>
+                {['todos', 'EXCELENTE', 'ACEPTABLE', 'BAJO', 'CRÍTICO'].map((e) => (
                     <Link 
-                        key={p}
-                        href={`/Dashboard/Home/4?popularidad=${encodeURIComponent(p)}&page=1`}
-                        className={`px-3 py-1 rounded ${popularidad === p ? 'bg-purple-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                        key={e}
+                        href={`/Dashboard/Home/4?term=${term}&estado=${encodeURIComponent(e)}`}
+                        className={`px-3 py-1 rounded ${estado === e ? 'bg-violet-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                     >
-                        {p}
+                        {e}
                     </Link>
                 ))}
             </div>
@@ -56,25 +71,34 @@ export default async function Report4Page({
                 <table className="min-w-full bg-white border border-gray-300">
                     <thead className="bg-gray-100">
                         <tr>
-                            <th className="px-4 py-2 border">Posición</th>
-                            <th className="px-4 py-2 border">Producto</th>
-                            <th className="px-4 py-2 border">Cantidad Vendida</th>
-                            <th className="px-4 py-2 border">Ingresos Totales</th>
-                            <th className="px-4 py-2 border">Popularidad</th>
+                            <th className="px-4 py-2 border">Grupo ID</th>
+                            <th className="px-4 py-2 border">Curso ID</th>
+                            <th className="px-4 py-2 border">Período</th>
+                            <th className="px-4 py-2 border">Total Sesiones</th>
+                            <th className="px-4 py-2 border">Asistencias</th>
+                            <th className="px-4 py-2 border">Ausencias</th>
+                            <th className="px-4 py-2 border">% Asistencia</th>
+                            <th className="px-4 py-2 border">Estado</th>
                         </tr>
                     </thead>
                     <tbody>
                         {datos.map((row, index) => (
                             <tr key={index} className="hover:bg-gray-50">
-                                <td className="px-4 py-2 border text-center">{row.posicion_ventas}</td>
-                                <td className="px-4 py-2 border">{row.nombre}</td>
-                                <td className="px-4 py-2 border text-center">{row.cantidad_vendida}</td>
-                                <td className="px-4 py-2 border text-right">${Number(row.ingresos_totales).toFixed(2)}</td>
+                                <td className="px-4 py-2 border text-center">{row.id_group}</td>
+                                <td className="px-4 py-2 border text-center">{row.course_id}</td>
+                                <td className="px-4 py-2 border">{row.periodo}</td>
+                                <td className="px-4 py-2 border text-center">{row.total_sesiones}</td>
+                                <td className="px-4 py-2 border text-center">{row.asistencias}</td>
+                                <td className="px-4 py-2 border text-center">{row.ausencias}</td>
+                                <td className="px-4 py-2 border text-right">{Number(row.porcentaje_asistencia).toFixed(2)}%</td>
                                 <td className="px-4 py-2 border text-center">
                                     <span className={`px-2 py-1 rounded ${
-                                        row.popularidad === 'Muy Popular' ? 'bg-green-200 text-green-800' : 'bg-blue-200 text-blue-800'
+                                        row.estado_asistencia === 'EXCELENTE' ? 'bg-green-200 text-green-800' :
+                                        row.estado_asistencia === 'ACEPTABLE' ? 'bg-blue-200 text-blue-800' :
+                                        row.estado_asistencia === 'BAJO' ? 'bg-yellow-200 text-yellow-800' :
+                                        'bg-red-200 text-red-800'
                                     }`}>
-                                        {row.popularidad}
+                                        {row.estado_asistencia}
                                     </span>
                                 </td>
                             </tr>
@@ -82,30 +106,6 @@ export default async function Report4Page({
                     </tbody>
                 </table>
             </div>
-  
-            {pagination && (
-                <div className="mt-4 flex justify-center gap-2">
-                    {pagination.page > 1 && (
-                        <Link 
-                            href={`/Dashboard/Home/4?popularidad=${encodeURIComponent(popularidad)}&page=${pagination.page - 1}`}
-                            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                        >
-                            Anterior
-                        </Link>
-                    )}
-                    <span className="px-4 py-2">
-                        Página {pagination.page} de {pagination.totalPages || 1}
-                    </span>
-                    {pagination.page < pagination.totalPages && (
-                        <Link 
-                            href={`/Dashboard/Home/4?popularidad=${encodeURIComponent(popularidad)}&page=${pagination.page + 1}`}
-                            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                        >
-                            Siguiente
-                        </Link>
-                    )}
-                </div>
-            )}
         </div>
     );
 }

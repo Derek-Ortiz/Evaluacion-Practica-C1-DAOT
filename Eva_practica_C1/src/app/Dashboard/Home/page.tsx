@@ -8,28 +8,28 @@ export default function ReportsPage() {
             <TopBar />
             <div className='reports-container'>
                 <ReportCard 
-                    title='Promedio por Categoría' 
-                    description='Promedio de precios por categoría de productos' 
+                    title='Rendimiento por Curso' 
+                    description='Análisis del desempeño académico por curso y período con tasa de reprobación' 
                     href='/Dashboard/Home/1' 
                 />
                 <ReportCard 
-                    title='Ranking de Usuarios' 
-                    description='Ranking de usuarios por total gastado con clasificación' 
+                    title='Carga Docente' 
+                    description='Distribución de carga de trabajo entre profesores con HAVING' 
                     href='/Dashboard/Home/2' 
                 />
                 <ReportCard 
-                    title='Órdenes por Status' 
-                    description='Distribución de órdenes por estado con porcentajes' 
+                    title='Estudiantes en Riesgo' 
+                    description='Identificación de alumnos en riesgo académico usando CTE' 
                     href='/Dashboard/Home/3' 
                 />
                 <ReportCard 
-                    title='Productos Más Vendidos' 
-                    description='Ranking de productos más vendidos con ingresos' 
+                    title='Asistencia por Grupo' 
+                    description='Análisis de asistencia con CASE y COALESCE para clasificación' 
                     href='/Dashboard/Home/4' 
                 />
                 <ReportCard 
-                    title='Desempeño de Usuarios' 
-                    description='Análisis de desempeño de usuarios por estado de órdenes' 
+                    title='Ranking Estudiantes' 
+                    description='Clasificación de estudiantes usando Window Functions (RANK)' 
                     href='/Dashboard/Home/5' 
                 />
             </div>

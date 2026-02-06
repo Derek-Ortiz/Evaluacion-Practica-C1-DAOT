@@ -1,16 +1,23 @@
-import { getVistaAnalisisDesempeno } from "@/app/actions/reportes";
+import { getVwRankStudents } from "@/app/actions/reportes";
 import Link from "next/link";
 
 export default async function Report5Page({
     searchParams
 }: {
-    searchParams: Promise<{ clasificacion?: string }>
+    searchParams: Promise<{ page?: string; term?: string; program?: string; topN?: string }>
 }) {
     const params = await searchParams;
-    const clasificacion = params.clasificacion || 'todos';
+    const page = parseInt(params.page || '1');
+    const term = params.term || 'todos';
+    const program = params.program || '';
+    const topN = parseInt(params.topN || '10');
     
-    const { data: datos, destacado } = await getVistaAnalisisDesempeno({
-        clasificacion: clasificacion as 'Cliente Activo' | 'Cliente Inactivo' | 'todos'
+    const { data: datos, destacado, pagination } = await getVwRankStudents({
+        page,
+        limit: 10,
+        term: term as 'enero-abril' | 'mayo-agosto' | 'septiembre-diciembre' | 'todos',
+        program,
+        topN
     });
     
     return (
@@ -20,36 +27,46 @@ export default async function Report5Page({
                     ← Volver a reportes
                 </Link>
             </div>
-            <h1 className="text-2xl font-bold mb-4">Análisis de Desempeño de Usuarios</h1>
+            <h1 className="text-2xl font-bold mb-4">Ranking de Estudiantes</h1>
             <p className="text-gray-600 mb-4">
-                Análisis detallado del desempeño de usuarios mostrando órdenes entregadas, canceladas y monto acumulado.
+                Clasificación de estudiantes por programa y período. Usa Window Functions (RANK, ROW_NUMBER, PERCENT_RANK).
             </p>
             
-            
             {destacado && (
-                <div className="bg-teal-50 border-l-4 border-teal-500 p-4 mb-6">
-                    <h3 className="font-bold text-teal-800">📊 Dato Destacado</h3>
-                    <p className="text-teal-700">
-                        Tasa de éxito (órdenes entregadas vs canceladas): <strong>{destacado.tasaExito}</strong>
-                    </p>
-                    <p className="text-teal-600 text-sm">
-                        Clientes activos: {destacado.clientesActivos} | 
-                        Clientes inactivos: {destacado.clientesInactivos} |
-                        Órdenes entregadas: {destacado.totalOrdenesEntregadas} |
-                        Órdenes canceladas: {destacado.totalOrdenesCanceladas}
+                <div className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-lg p-6 mb-6 shadow-lg">
+                    <p className="text-sm uppercase tracking-wide opacity-80">Estudiante Destacado</p>
+                    <p className="text-4xl font-bold">{destacado.mejorCalificacion}</p>
+                    <p className="text-lg mt-1">🏆 {destacado.estudianteDestacado}</p>
+                    <p className="text-sm opacity-70 mt-2">
+                        Programa: {destacado.programaDestacado} | 
+                        Promedio general: {destacado.promedioCalificaciones} |
+                        Total estudiantes: {destacado.totalEstudiantes}
                     </p>
                 </div>
             )}
             
             <div className="mb-4 flex gap-2 flex-wrap">
-                <span className="font-medium">Filtrar por clasificación:</span>
-                {['todos', 'Cliente Activo', 'Cliente Inactivo'].map((c) => (
+                <span className="font-medium">Filtrar por período:</span>
+                {['todos', 'enero-abril', 'mayo-agosto', 'septiembre-diciembre'].map((t) => (
                     <Link 
-                        key={c}
-                        href={`/Dashboard/Home/5?clasificacion=${encodeURIComponent(c)}`}
-                        className={`px-3 py-1 rounded ${clasificacion === c ? 'bg-teal-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                        key={t}
+                        href={`/Dashboard/Home/5?term=${t}&program=${program}&topN=${topN}&page=1`}
+                        className={`px-3 py-1 rounded ${term === t ? 'bg-amber-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                     >
-                        {c}
+                        {t}
+                    </Link>
+                ))}
+            </div>
+            
+            <div className="mb-4 flex gap-2 flex-wrap items-center">
+                <span className="font-medium">Top N:</span>
+                {[3, 5, 10, 20, 50].map((n) => (
+                    <Link 
+                        key={n}
+                        href={`/Dashboard/Home/5?term=${term}&program=${program}&topN=${n}&page=1`}
+                        className={`px-3 py-1 rounded ${topN === n ? 'bg-yellow-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                    >
+                        Top {n}
                     </Link>
                 ))}
             </div>
@@ -58,27 +75,41 @@ export default async function Report5Page({
                 <table className="min-w-full bg-white border border-gray-300">
                     <thead className="bg-gray-100">
                         <tr>
-                            <th className="px-4 py-2 border">Usuario</th>
-                            <th className="px-4 py-2 border">Órdenes Entregadas</th>
-                            <th className="px-4 py-2 border">Órdenes Canceladas</th>
-                            <th className="px-4 py-2 border">Monto Total</th>
-                            <th className="px-4 py-2 border">Monto Acumulado</th>
-                            <th className="px-4 py-2 border">Clasificación</th>
+                            <th className="px-4 py-2 border">Rank Programa</th>
+                            <th className="px-4 py-2 border">Rank Global</th>
+                            <th className="px-4 py-2 border">Estudiante</th>
+                            <th className="px-4 py-2 border">Programa</th>
+                            <th className="px-4 py-2 border">Período</th>
+                            <th className="px-4 py-2 border">Calificación</th>
+                            <th className="px-4 py-2 border">Percentil</th>
                         </tr>
                     </thead>
                     <tbody>
                         {datos.map((row, index) => (
                             <tr key={index} className="hover:bg-gray-50">
-                                <td className="px-4 py-2 border">{row.nombre}</td>
-                                <td className="px-4 py-2 border text-center">{row.ordenes_entregadas}</td>
-                                <td className="px-4 py-2 border text-center">{row.ordenes_canceladas}</td>
-                                <td className="px-4 py-2 border text-right">${Number(row.monto_total).toFixed(2)}</td>
-                                <td className="px-4 py-2 border text-right">${Number(row.monto_acumulado).toFixed(2)}</td>
                                 <td className="px-4 py-2 border text-center">
                                     <span className={`px-2 py-1 rounded ${
-                                        row.clasificacion === 'Cliente Activo' ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-800'
+                                        row.ranking_programa === 1 ? 'bg-yellow-300 text-yellow-900 font-bold' :
+                                        row.ranking_programa === 2 ? 'bg-gray-300 text-gray-800' :
+                                        row.ranking_programa === 3 ? 'bg-orange-200 text-orange-800' :
+                                        ''
                                     }`}>
-                                        {row.clasificacion}
+                                        #{row.ranking_programa}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-2 border text-center">#{row.ranking_global}</td>
+                                <td className="px-4 py-2 border">{row.nombre_estudiante}</td>
+                                <td className="px-4 py-2 border">{row.programa}</td>
+                                <td className="px-4 py-2 border">{row.periodo}</td>
+                                <td className="px-4 py-2 border text-right font-semibold">{Number(row.calificacion_final).toFixed(2)}</td>
+                                <td className="px-4 py-2 border text-center">
+                                    <span className={`px-2 py-1 rounded ${
+                                        Number(row.percentil) < 25 ? 'bg-green-200 text-green-800' :
+                                        Number(row.percentil) < 50 ? 'bg-blue-200 text-blue-800' :
+                                        Number(row.percentil) < 75 ? 'bg-yellow-200 text-yellow-800' :
+                                        'bg-red-200 text-red-800'
+                                    }`}>
+                                        {row.percentil}%
                                     </span>
                                 </td>
                             </tr>
@@ -86,6 +117,30 @@ export default async function Report5Page({
                     </tbody>
                 </table>
             </div>
+            
+            {pagination && (
+                <div className="mt-4 flex justify-center gap-2">
+                    {pagination.page > 1 && (
+                        <Link 
+                            href={`/Dashboard/Home/5?term=${term}&program=${program}&topN=${topN}&page=${pagination.page - 1}`}
+                            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                        >
+                            Anterior
+                        </Link>
+                    )}
+                    <span className="px-4 py-2">
+                        Página {pagination.page} de {pagination.totalPages || 1}
+                    </span>
+                    {pagination.page < pagination.totalPages && (
+                        <Link 
+                            href={`/Dashboard/Home/5?term=${term}&program=${program}&topN=${topN}&page=${pagination.page + 1}`}
+                            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                        >
+                            Siguiente
+                        </Link>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
