@@ -58,18 +58,7 @@ export default async function Report5Page({
                 ))}
             </div>
             
-            <div className="mb-4 flex gap-2 flex-wrap items-center">
-                <span className="font-medium">Top N:</span>
-                {[3, 5, 10, 20, 50].map((n) => (
-                    <Link 
-                        key={n}
-                        href={`/Dashboard/Home/5?term=${term}&program=${program}&topN=${n}&page=1`}
-                        className={`px-3 py-1 rounded ${topN === n ? 'bg-yellow-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-                    >
-                        Top {n}
-                    </Link>
-                ))}
-            </div>
+        
             
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border border-gray-300">

@@ -398,12 +398,10 @@ export async function getVwRankStudents(rawFilters?: Partial<RankStudentsFilter>
             paramIndex++;
         }
         
-
-        if (filters.topN < 100) {
-            whereConditions.push(`ranking_programa <= $${paramIndex}`);
-            params.push(filters.topN);
-            paramIndex++;
-        }
+        const topNValue = Number(filters.topN) || 10;
+        whereConditions.push(`ranking_programa <= $${paramIndex}`);
+        params.push(topNValue);
+        paramIndex++;
         
         const whereClause = whereConditions.length > 0 
             ? `WHERE ${whereConditions.join(' AND ')}` 
