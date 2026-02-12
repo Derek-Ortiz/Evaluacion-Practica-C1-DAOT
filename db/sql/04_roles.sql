@@ -3,13 +3,11 @@
 -- ============================================
 
 
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = :'app_user') THEN
-        EXECUTE format('CREATE USER %I WITH PASSWORD %L', :'app_user', :'app_password');
-    END IF;
-END
-$$;
+SELECT format('CREATE USER %I WITH PASSWORD %L', :'app_user', :'app_password')
+WHERE NOT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = :'app_user'
+)
+\gexec
 
 ALTER USER :"app_user" NOCREATEDB NOCREATEROLE NOSUPERUSER;
 
