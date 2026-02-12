@@ -1,28 +1,27 @@
 -- ============================================
 -- ROLES.SQL - Crear usuario con permisos limitados
--- Las variables se sustituyen via envsubst en init.sh
 -- ============================================
 
 
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${APP_DB_USER}') THEN
-        CREATE USER ${APP_DB_USER} WITH PASSWORD '${APP_DB_PASSWORD}';
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'evac1') THEN
+        CREATE USER evac1 WITH PASSWORD '3v4c1';
     END IF;
 END
 $$;
 
-ALTER USER ${APP_DB_USER} NOCREATEDB NOCREATEROLE NOSUPERUSER;
+ALTER USER evac1 NOCREATEDB NOCREATEROLE NOSUPERUSER;
 
 
-GRANT CONNECT ON DATABASE ${POSTGRES_DB} TO ${APP_DB_USER};
+GRANT CONNECT ON DATABASE evac1_db TO evac1;
 
 
-GRANT USAGE ON SCHEMA public TO ${APP_DB_USER};
+GRANT USAGE ON SCHEMA public TO evac1;
 
 
-GRANT SELECT ON vw_course_performance TO ${APP_DB_USER};
-GRANT SELECT ON vw_teacher_load TO ${APP_DB_USER};
-GRANT SELECT ON vw_students_at_risk TO ${APP_DB_USER};
-GRANT SELECT ON vw_attendance_by_group TO ${APP_DB_USER};
-GRANT SELECT ON vw_rank_students TO ${APP_DB_USER};
+GRANT SELECT ON vw_course_performance TO evac1;
+GRANT SELECT ON vw_teacher_load TO evac1;
+GRANT SELECT ON vw_students_at_risk TO evac1;
+GRANT SELECT ON vw_attendance_by_group TO evac1;
+GRANT SELECT ON vw_rank_students TO evac1;
