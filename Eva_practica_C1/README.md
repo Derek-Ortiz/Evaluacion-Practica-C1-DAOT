@@ -1,5 +1,21 @@
 # Aplicaciones web - Evaluacion practica C1
 
+## Inicio rapido (Docker)
+
+1. Copia el archivo .env.example a .env en la raiz del repo y ajusta credenciales.
+2. Ejecuta:
+
+```bash
+docker compose up --build
+```
+
+Si ya existia el volumen de Postgres y necesitas re-ejecutar los scripts de BD:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
 ## Estructura de Archivos
 
 | Archivo | Descripción |
