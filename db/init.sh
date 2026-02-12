@@ -1,34 +1,27 @@
 #!/bin/bash
-# ============================================
-# INIT.SH - Script único de inicialización
-# Controla el orden de ejecución de los archivos SQL
-# ============================================
-
 set -e
 
-echo "Iniciando configuración de base de datos..."
+echo "Iniciando configuracion de base de datos..."
+
+SCRIPT_DIR="/sql"
 
 SQL_FILES=(
-    "schema.sql"
-    "seed.sql"
-    "indexes.sql"
-    "migrate.sql"
-    "reports_vw.sql"
-    "verify.sql"
-    "roles.sql"
+    "01_schema.sql"
+    "02_seed.sql"
+    "03_reports_vw.sql"
+    "04_roles.sql"
+    "05_indexes.sql"
 )
 
 for file in "${SQL_FILES[@]}"; do
-    filepath="/sql-scripts/$file"
+    filepath="$SCRIPT_DIR/$file"
     
     if [ -f "$filepath" ]; then
         echo "Ejecutando: $file"
         
-        if [ "$file" = "roles.sql" ]; then
-            
+        if [ "$file" = "04_roles.sql" ]; then
             envsubst < "$filepath" | psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB"
         else
-            
             psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f "$filepath"
         fi
         

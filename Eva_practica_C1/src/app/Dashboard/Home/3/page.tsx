@@ -1,4 +1,4 @@
-import { getVwStudentsAtRisk } from "@/app/actions/reportes";
+import { getVwStudentsAtRisk } from "@/lib/reportes";
 import Link from "next/link";
 
 export default async function Report3Page({

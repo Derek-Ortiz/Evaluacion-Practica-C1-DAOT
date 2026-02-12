@@ -1,4 +1,4 @@
-import { getVwCoursePerformance } from "@/app/actions/reportes";
+import { getVwCoursePerformance } from "@/lib/reportes";
 import Link from "next/link";
 
 export default async function Report1Page({

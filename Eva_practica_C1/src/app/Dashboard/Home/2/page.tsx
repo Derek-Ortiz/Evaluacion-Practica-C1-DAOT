@@ -1,4 +1,4 @@
-import { getVwTeacherLoad } from "@/app/actions/reportes";
+import { getVwTeacherLoad } from "@/lib/reportes";
 import Link from "next/link";
 
 export default async function Report2Page({

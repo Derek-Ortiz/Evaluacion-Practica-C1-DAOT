@@ -1,4 +1,4 @@
-import { getVwRankStudents } from "@/app/actions/reportes";
+import { getVwRankStudents } from "@/lib/reportes";
 import Link from "next/link";
 
 export default async function Report5Page({
