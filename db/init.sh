@@ -20,7 +20,10 @@ for file in "${SQL_FILES[@]}"; do
         echo "Ejecutando: $file"
         
         if [ "$file" = "04_roles.sql" ]; then
-            envsubst < "$filepath" | psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB"
+            sed -e "s/\${APP_DB_USER}/$APP_DB_USER/g" \
+                -e "s/\${APP_DB_PASSWORD}/$APP_DB_PASSWORD/g" \
+                -e "s/\${POSTGRES_DB}/$POSTGRES_DB/g" \
+                "$filepath" | psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB"
         else
             psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f "$filepath"
         fi
